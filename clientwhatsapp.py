@@ -3,7 +3,7 @@
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 import tkinter
-import sys
+
 
 
 def receive():
@@ -30,7 +30,6 @@ def on_closing(event=None):
     """This function is to be called when the window is closed."""
     my_msg.set("{quit}")
     send()
-print(sys.argv[0])
 top = tkinter.Tk()
 top.title("Chatter")
 
