@@ -1,17 +1,8 @@
-#!/usr/bin/env python3
-"""Script for Tkinter GUI chat client."""
-from socket import AF_INET, socket, SOCK_STREAM
-from threading import Thread
-import tkinter
+# import modules
+
 from tkinter import *
 import os
-import pickle
 
-USERNAME = 0
-PASSWORD = 1
-
-
-#-----------------------------
 
 # Designing window for registration
 
@@ -106,9 +97,8 @@ def login_verify():
         Dindex = PwordandUsername.index(username1+'-'+password1)
         Userinfo = PwordandUsername [Dindex]
         a = Userinfo.split('-')
-        Pword = str (a[PASSWORD])
-        global Username
-        Username = str (a[USERNAME])
+        Pword = str (a[1])
+        Username = str (a[0])
 
         if password1 == Pword and username1 == Username :
             login_sucess()
@@ -157,12 +147,6 @@ def user_not_found():
 
 def delete_login_success():
     login_success_screen.destroy()
-    main_screen.destroy()
-
-
-
-
-
 
 
 def delete_password_not_recognised():
@@ -189,97 +173,4 @@ def main_account_screen():
     main_screen.mainloop()
 
 
-
-
-
-#------------------------------------------------
-
-
-def sendfirst():
-    global Username
-    client_socket.send(bytes('\n'+Username, "utf8"))
-
-
-
-def receive():
-    """Handles receiving of messages."""
-    while True:
-        try:
-            msg = client_socket.recv(BUFSIZ).decode("utf8")
-            msg_list.insert(tkinter.END, msg)
-        except OSError:  # Possibly client has left the chat.
-            break
-
-
-def send(event=None):  # event is passed by binders.
-    """Handles sending of messages."""
-
-    msg = my_msg.get()
-    listmsg = [msg,'message']
-    my_msg.set("")  # Clears input field.
-    client_socket.send(pickle.dumps(listmsg))
-    if msg == "{quit}":
-        client_socket.close()
-        top.quit()
-
-
-def on_closing(event=None):
-    """This function is to be called when the window is closed."""
-    my_msg.set("{quit}")
-    send()
-
-Expected_PORT = 32000
-HOST = str(os.system("ipconfig getifaddr en0"))[:-1]
-PORT = Expected_PORT
-#----Now comes the sockets part----
-#HOST = input('Enter host: ')
-#PORT = input('Enter port: ')
-if not PORT:
-    PORT = Expected_PORT
-else:
-    PORT = int(PORT)
-
-BUFSIZ = 1024
-ADDR = (HOST, PORT)
-try:
-    client_socket = socket(AF_INET, SOCK_STREAM)
-    client_socket.connect(ADDR)
-    main_account_screen()
-
-
-except:
-    print ('unable to connect')
-    exit()
-
-
-
-
-top = tkinter.Tk()
-top.title("BarChat")
-messages_frame = tkinter.Frame(top)
-my_msg = tkinter.StringVar()  # For the messages to be sent.
-
-
-my_msg.set("Type your messages here.")
-scrollbar = tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
-# Following will contain the messages.
-msg_list = tkinter.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
-scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
-msg_list.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
-msg_list.pack()
-messages_frame.pack()
-
-entry_field = tkinter.Entry(top, textvariable=my_msg)
-entry_field.bind("<Return>", send)
-entry_field.pack()
-sendfirst()
-send_button = tkinter.Button(top, text="Send", command=send)
-send_button.pack()
-
-top.protocol("WM_DELETE_WINDOW", on_closing)
-
-
-
-receive_thread = Thread(target=receive)
-receive_thread.start()
-tkinter.mainloop()  # Starts GUI execution.
+main_account_screen()
