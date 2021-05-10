@@ -77,12 +77,9 @@ def login():
 def register_user():
     username_info = username.get()
     password_info = password.get()
-
-    file = open('UserDataBase.txt', "a")
-    file.write(username_info + "-")
-    file.write(password_info+'\n')
-    file.close()
-
+    regArry = ['register',username_info,password_info]
+    data_string = pickle.dumps(regArry)
+    client_socket.send(data_string)
     username_entry.delete(0, END)
     password_entry.delete(0, END)
 
@@ -92,33 +89,26 @@ def register_user():
 # Implementing event on login button
 
 def login_verify():
+
     username1 = username_verify.get()
     password1 = password_verify.get()
+    regArry = ['signin', username1, password1]
+    data_string = pickle.dumps(regArry)
+    client_socket.send(data_string)
     username_login_entry.delete(0, END)
     password_login_entry.delete(0, END)
+    answer = client_socket.recv(BUFSIZ).decode("utf8")
+    print ('-------------------------------------'+answer)
 
 
-
-    file1 = open("UserDataBase.txt", "r")
-    PwordandUsername = file1.read().splitlines()
-
-    if username1+'-'+password1 in PwordandUsername:
-        Dindex = PwordandUsername.index(username1+'-'+password1)
-        Userinfo = PwordandUsername [Dindex]
-        a = Userinfo.split('-')
-        Pword = str (a[PASSWORD])
-        global Username
-        Username = str (a[USERNAME])
-
-        if password1 == Pword and username1 == Username :
+    if answer == "login success":
             login_sucess()
 
-        elif password1 != Pword:
+    elif answer == 'login fail' :
             password_not_recognised()
-
     else:
+        print (answer)
         user_not_found()
-
 
 # Designing popup for login success
 
@@ -147,7 +137,7 @@ def password_not_recognised():
 def user_not_found():
     global user_not_found_screen
     user_not_found_screen = Toplevel(login_screen)
-    user_not_found_screen.title("Success")
+    user_not_found_screen.title("Unsuccessful")
     user_not_found_screen.geometry("150x100")
     Label(user_not_found_screen, text="User Not Found").pack()
     Button(user_not_found_screen, text="OK", command=delete_user_not_found_screen).pack()
@@ -195,10 +185,6 @@ def main_account_screen():
 #------------------------------------------------
 
 
-def sendfirst():
-    global Username
-    client_socket.send(bytes('\n'+Username, "utf8"))
-
 
 
 def receive():
@@ -215,9 +201,8 @@ def send(event=None):  # event is passed by binders.
     """Handles sending of messages."""
 
     msg = my_msg.get()
-    listmsg = [msg,'message']
     my_msg.set("")  # Clears input field.
-    client_socket.send(pickle.dumps(listmsg))
+    client_socket.send(bytes(msg, "utf8"))
     if msg == "{quit}":
         client_socket.close()
         top.quit()
@@ -228,7 +213,7 @@ def on_closing(event=None):
     my_msg.set("{quit}")
     send()
 
-Expected_PORT = 32000
+Expected_PORT = 33000
 HOST = str(os.system("ipconfig getifaddr en0"))[:-1]
 PORT = Expected_PORT
 #----Now comes the sockets part----
@@ -272,7 +257,6 @@ messages_frame.pack()
 entry_field = tkinter.Entry(top, textvariable=my_msg)
 entry_field.bind("<Return>", send)
 entry_field.pack()
-sendfirst()
 send_button = tkinter.Button(top, text="Send", command=send)
 send_button.pack()
 
