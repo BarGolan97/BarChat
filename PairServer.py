@@ -2,6 +2,8 @@ import socket
 import threading
 import queue
 import time
+import os
+
 
 MY_PROCESS = 0
 MY_USERNAME = 1
@@ -105,6 +107,7 @@ class listenToClient(threading.Thread):
                     if not self.playing:
                         print('check if player left game')
                         self.updatePlayStatus()
+
                     print (str(self.p[MY_USERNAME])+'  start playng with ' + str(self.p[OTHER_PLAYER]))
                     response = str(self.p[MY_USERNAME])+"  Playing with" + ' : ' + str(self.p[OTHER_PLAYER])
                     msgToSend = [self.p[OTHER_SOCKET], response]
@@ -112,6 +115,7 @@ class listenToClient(threading.Thread):
                     self.q.put(msgToSend)
                     msgToSend = [self.p[MY_SOCKET], response]
                     self.q.put(msgToSend)
+                    self.gameApp()
                 else:
                     if self.playing:
                         print ('performing game app',p)
@@ -129,6 +133,7 @@ class listenToClient(threading.Thread):
         p1[OTHER_SOCKET] = p2[MY_SOCKET]
         p2[OTHER_PLAYER] = self.p[MY_USERNAME]
         p2[OTHER_SOCKET] = self.p[MY_SOCKET]
+        os.system('python clientwhatsapp.py')
 
 
     def updatePlayStatus (self):
@@ -147,6 +152,7 @@ class listenToClient(threading.Thread):
                 time.sleep(0.3)
 
     def gameApp(self):
+        print ('hello')
         # Set the response to echo back the recieved data
         response = str(self.p[MY_USERNAME]) + ' : ' + self.data
         msgToSend = [self.p[OTHER_SOCKET], response]
@@ -163,7 +169,7 @@ class sendToClient(threading.Thread):
         self.q = q
 
     def run(self):
-        print ('stat send process')
+        print ('start send process')
         while True:
 
             if not self.q.empty():
@@ -177,7 +183,7 @@ class sendToClient(threading.Thread):
 
 
 if __name__ == "__main__":
-    port_num = 8000
+    port_num = 8001
     Ts = ThreadedServer('0.0.0.0', port_num, outgoingQ)
     Ts.start()
     Ts.join()

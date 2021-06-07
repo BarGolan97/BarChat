@@ -15,6 +15,10 @@ def accept_incoming_connections():
 
 def handle_client(client):  # Takes client socket as argument.
     """Handles a single client connection."""
+    global list_of_groups
+    list_of_groups = {}
+    people_in_group = []
+
 
     someMsg = client.recv(BUFSIZ)
     someMsg = pickle.loads(someMsg)
@@ -68,13 +72,57 @@ def handle_client(client):  # Takes client socket as argument.
     welcome = '\nWelcome %s! If you ever want to quit, type {quit} to exit.' % name
     client.send(bytes(welcome, "utf8"))
     msg = "%s has joined the chat!" % name
-    broadcast(bytes(msg, "utf8"))
+    #broadcast(bytes(msg, "utf8"), 'placeholder')
     clients[client] = name
 
     while True:
         msg = client.recv(BUFSIZ)
+
+        decodedMSG = msg.decode("utf8")
+        print (decodedMSG)
+        print(decodedMSG[0])
+
+        if decodedMSG[0] == "#" :
+
+            print ('im in the group thing')
+
+            G = decodedMSG[1:]
+
+            if G in list_of_groups:
+                list_of_groups.setdefault(G, []).append(client)
+
+            else:
+                people_in_group.append(client)
+                list_of_groups[G] = people_in_group
+                people_in_group = []
+
+            print(list_of_groups)
+
+
+
+            file = open("UserDataBase.txt", "r")
+            PwordandUsername = file.read().splitlines()
+
+            if name + '-' + password1 in PwordandUsername:
+                Dindex = PwordandUsername.index(name + '-' + password1)
+                data = file.readlines()
+                data[Dindex] += "-"+G+'\n'
+                file = open('UserDataBase.txt', "w")
+                file.writelines(data)
+                file.close()
+
+
+
+
+
+
+
+
+
         if msg != bytes("{quit}", "utf8"):
-            broadcast(msg, name + ": ")
+
+            broadcast(msg, G ,name + ": ")
+
         else:
             client.send(bytes("{quit}", "utf8"))
             client.close()
@@ -83,11 +131,15 @@ def handle_client(client):  # Takes client socket as argument.
             break
 
 
-def broadcast(msg, prefix=""):  # prefix is for name identification.
+def broadcast(msg, group, prefix=""):  # prefix is for name identification.
     """Broadcasts a message to all the clients."""
-
-    for sock in clients:
+    people = list_of_groups[group]
+    for sock in people :
+        print (clients)
         sock.send(bytes(prefix, "utf8") + msg)
+
+    #for sock in group
+    #do bla bla bla
 
 
 clients = {}

@@ -72,6 +72,14 @@ def login():
     Button(login_screen, text="Login", width=10, height=1, command=login_verify).pack()
 
 
+def Join_user():
+
+    group_info = group.get()
+    server_group = '#'+group_info
+    print (server_group)
+    client_socket.send(bytes(server_group, "utf8"))
+
+
 # Implementing event on register button
 
 def register_user():
@@ -147,7 +155,7 @@ def user_not_found():
 
 def delete_login_success():
     login_success_screen.destroy()
-    main_screen.destroy()
+    join_group_screen()
 
 
 
@@ -179,8 +187,26 @@ def main_account_screen():
     main_screen.mainloop()
 
 
+#join group screen
 
+def join_group_screen():
+    global join_group_screen
+    join_group_screen = Toplevel(main_screen)
+    join_group_screen.title("Register")
+    join_group_screen.geometry("300x250")
 
+    global group
+    global group_entry
+    group = StringVar()
+
+    Label(join_group_screen, text="Please enter details below", bg="white").pack()
+    Label(join_group_screen, text="").pack()
+    group_lable = Label(join_group_screen, text="group name * ")
+    group_lable.pack()
+    group_entry = Entry(join_group_screen, textvariable=group)
+    group_entry.pack()
+    Label(join_group_screen, text="").pack()
+    Button(join_group_screen, text="JOIN", width=10, height=1, bg="white", command=Join_user).pack()
 
 #------------------------------------------------
 
