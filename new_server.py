@@ -15,9 +15,9 @@ def accept_incoming_connections():
 
 def handle_client(client):  # Takes client socket as argument.
     """Handles a single client connection."""
-
+    global list_of_groups
+    list_of_groups = {}
     people_in_group = []
-
 
 
     someMsg = client.recv(BUFSIZ)
@@ -25,7 +25,7 @@ def handle_client(client):  # Takes client socket as argument.
 
     while someMsg[0] == 'register' :
 
-
+        print(someMsg[0], someMsg[1], someMsg[2], 'hellllllllooooooo')
         name = someMsg [1]
         password_info = someMsg [2]
         file = open('UserDataBase.txt', "a")
@@ -58,20 +58,15 @@ def handle_client(client):  # Takes client socket as argument.
             Username = str(a[0])
 
             if password1 == Pword and name == Username:
-
+                print('im in!')
                 client.send(bytes("login success", "utf8"))
 
 
             elif password1 != Pword:
                 client.send(bytes("login fail", "utf8"))
-                client.close()
-                del clients[client]
 
         else:
             client.send(bytes("login fail", "utf8"))
-            client.close()
-            del clients[client]
-
 
     time.sleep(1)
     welcome = '\nWelcome %s! If you ever want to quit, type {quit} to exit.' % name
@@ -84,30 +79,28 @@ def handle_client(client):  # Takes client socket as argument.
         msg = client.recv(BUFSIZ)
 
         decodedMSG = msg.decode("utf8")
-
+        print (decodedMSG)
+        print(decodedMSG[0])
 
         if decodedMSG[0] == "#" :
 
+            print ('im in the group thing')
+
             G = decodedMSG[1:]
 
-            if G in list_of_groups.keys():
-
-                uhhh = list_of_groups[G]
-                uhhh.append(client)
-                list_of_groups[G] = uhhh
-                print(list_of_groups)
-
+            if G in list_of_groups:
+                list_of_groups.setdefault(G, []).append(client)
 
             else:
                 people_in_group.append(client)
                 list_of_groups[G] = people_in_group
                 people_in_group = []
-            print('im in')
+
             print(list_of_groups)
 
+            '''
 
-
-            '''file = open("UserDataBase.txt", "r")
+            file = open("UserDataBase.txt", "r")
             PwordandUsername = file.read().splitlines()
 
             if name + '-' + password1 in PwordandUsername:
@@ -116,17 +109,22 @@ def handle_client(client):  # Takes client socket as argument.
                 data[Dindex] += "-"+G+'\n'
                 file = open('UserDataBase.txt', "w")
                 file.writelines(data)
-                file.close() '''
+                file.close()'''
 
-        elif msg != bytes("{quit}", "utf8"):
-            print('I WANT TO BROADCAST A THING\n\n')
+
+
+
+
+
+
+
+
+        if msg != bytes("{quit}", "utf8"):
+
             broadcast(msg, G ,name + ": ")
 
         else:
-            #Gets client out of group if leaves
             client.send(bytes("{quit}", "utf8"))
-            print('I am removeing\n\n ' + client)
-            list_of_groups[G].remove(client)
             client.close()
             del clients[client]
             broadcast(bytes("%s has left the chat." % name, "utf8"))
@@ -136,10 +134,8 @@ def handle_client(client):  # Takes client socket as argument.
 def broadcast(msg, group, prefix=""):  # prefix is for name identification.
     """Broadcasts a message to all the clients."""
     people = list_of_groups[group]
-    print (people)
-    print('LIST OF GROUPS : \n'+str(list_of_groups))
     for sock in people :
-        print ('im sending somthing to this persone' + str (sock))
+        print (clients)
         sock.send(bytes(prefix, "utf8") + msg)
 
     #for sock in group
@@ -148,8 +144,6 @@ def broadcast(msg, group, prefix=""):  # prefix is for name identification.
 
 clients = {}
 addresses = {}
-list_of_groups = {}
-
 
 HOST = ''
 PORT = 33000 #33000
@@ -160,12 +154,9 @@ SERVER = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)
 
 if __name__ == "__main__":
-
-    SERVER.listen(6)
+    SERVER.listen(5)
     print("Waiting for connection...")
     ACCEPT_THREAD = Thread(target=accept_incoming_connections)
     ACCEPT_THREAD.start()
     ACCEPT_THREAD.join()
     SERVER.close()
-
-    #
