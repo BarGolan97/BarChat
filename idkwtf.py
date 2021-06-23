@@ -1,93 +1,56 @@
-from twisted.internet import reactor,protocol
-from twisted.protocols import basic
-from twisted.internet.protocol import Protocol, ClientFactory
-import time
+import tkinter as tk
 
-def t():
+root = tk.Tk()
 
-return ("["+ time.strftime("%H:%M:%S") +"] ")
+# setting the windows size
+root.geometry("600x400")
+global name_var
+global passw_var
+# declaring string variable
+# for storing name and password
+name_var = tk.StringVar()
+passw_var = tk.StringVar()
 
-class EchoProtocol(basic.LineReceiver):
-  name = "Unnamed"
+# defining a function that will
+# get the name and password and
+# print them on the screen
 
-  def connectionMade(self):
+# creating a label for
+# name using widget Label
+name_label = tk.Label(root, text='Username', font=('calibre', 10, 'bold'))
 
-    self.transport.write("WhiteNOISE"+"\n")
-    self.sendLine("Enter A name Below...")
-    self.sendLine("")
-    self.count = 0
-    self.factory.clients.append(self)
-    self.factory.group.append(self)
-    print t() + "+ Connection from: "+ self.transport.getPeer().host
+# creating a entry for input
+# name using widget Entry
+name_entry = tk.Entry(root, textvariable=name_var, font=('calibre', 10, 'normal'))
 
-  def connectionLost(self, reason):
+# creating a label for password
+passw_label = tk.Label(root, text='Password', font=('calibre', 10, 'bold'))
 
-    self.sendMsg("- %s left." % self.name)
-    print t() + "- Connection lost: "+ self.name
-    self.factory.clients.remove(self)
-  def dataReceived(self, data):
-        #print "data is ", data
-            a = data.split(':')
-            if len(a) > 1:
-                    command = a[0]
-                    content = a[1]
+# creating a entry for password
+passw_entry = tk.Entry(root, textvariable=passw_var, font=('calibre', 10, 'normal'), show='*')
 
+# creating a button using the widget
+# Button that will call the submit function
+sub_btn = tk.Button(root, text='Submit', command=submit)
 
-                    msg = ""
-                    if command == "iam":
-                            self.name = content
-                            msg = self.name + " has joined"
+# placing the label and entry in
+# the required position using grid
+# method
+name_label.grid(row=0, column=0)
+name_entry.grid(row=0, column=1)
+passw_label.grid(row=1, column=0)
+passw_entry.grid(row=1, column=1)
+sub_btn.grid(row=2, column=1)
 
-                    elif command == "msg":
-                            msg = self.name + ": " + content
-                    elif command  == "quit":
-                            self.transport.loseConnection()
-                            return
-                    elif command == "/ul":
-                            self.chatters()
-                            return()
+# performing an infinite loop
+# for the window to display
+root.mainloop()
+def submit():
+    name = name_var.get()
+    password = passw_var.get()
 
-                    print msg
-                    self.sendMsg(msg)
+    print("The name is : " + name)
+    print("The password is : " + password)
 
-  def username(self, line):
-
-    for x in self.factory.clients:
-        if x.name == line:
-            self.sendLine("This username is taken; please choose another")
-            return
-
-    self.name = line
-    self.chatters()
-    self.sendLine("You have been connected!")
-    self.sendLine("")
-    self.count += 1
-    self.sendMsg("+ %s joined." % self.name)
-    print '%s~ %s connected as: %s' % (t(), self.transport.getPeer().host, self.name)
-
-  def chatters(self):
-    x = len(self.factory.clients) - 1
-    s = 'is' if x == 1 else 'are'
-    p = 'person' if x == 1 else 'people'
-    self.sendLine("There %s %i other %s connected:" % (s, x, p) )
-
-    for client in self.factory.clients:
-        if client is not self:
-            self.sendLine(client.name)
-    self.sendLine("")
-
-  def sendMsg(self, message):
-
-    for client in self.factory.clients:
-        client.transport.write( message + '\n')
-
-
-
-class EchoServerFactory(protocol.ClientFactory):
-protocol  = EchoProtocol
-clients = []
-
-if __name__ == "__main__":
-reactor.listenTCP(5001, EchoServerFactory())
-print ("Chat Server Started")
-reactor.run()
+    name_var.set("")
+    passw_var.set("")
