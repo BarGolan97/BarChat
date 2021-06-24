@@ -538,13 +538,18 @@ def MAINWHATSAPP():
 
     def send(event=None):  # event is passed by binders.
         """Handles sending of messages."""
-
+        fil = open('file.txt', 'r')
+        current_group = fil.read()
+        fil.close()
         msg = my_msg.get()
         my_msg.set("")  # Clears input field.
         client_socket.send(bytes(msg, "utf8"))
         if msg == "{quit}":
             client_socket.close()
             top.quit()
+        if msg == "{quit group}":
+            your_groups.remove(current_group)
+            Join_user(your_groups[0])
 
 
     def on_closing(event=None):

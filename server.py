@@ -165,6 +165,9 @@ def handle_client(client):  # Takes client socket as argument.
             client.send(data_string)
 
 
+        elif decodedMSG == "{quit group}":
+            list_of_groups[G].remove(client)
+            broadcast(bytes("%s has left the chat." % name, "utf8"),G)
 
 
 
@@ -179,7 +182,7 @@ def handle_client(client):  # Takes client socket as argument.
             list_of_groups[G].remove(client)
             client.close()
             del clients[client]
-            broadcast(bytes("%s has left the chat." % name, "utf8"))
+            broadcast(bytes("%s has left the chat." % name, "utf8"),G)
             break
 
 
