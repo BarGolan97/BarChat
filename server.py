@@ -212,7 +212,7 @@ print (list_of_groups)
 
 
 HOST = ''
-PORT = 33000 #33000
+PORT = 32000 #33000
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 

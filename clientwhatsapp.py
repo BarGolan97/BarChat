@@ -106,16 +106,17 @@ def Join_user(Agroup = None):
     print('im checcking if '+group_info+ 'is in b :\n')
     if group_info in b.keys():
         messages = b[group_info]
-        print(messages)
+        print(type(messages))
         if messages != '' :
-            if type(messages) == list:
-                for f in messages:
-                    msg_list.insert (END,f)
+            for f in messages:
+                msg_list.insert (END,f)
 
             else:
                 msg_list.insert(END,messages)
         else:
-            pass
+            msg_list.insert(END,messages)
+
+        msg_list.pack()
 
     try:
         join_group_screen.destroy()
@@ -478,7 +479,7 @@ def another_join_group():
 
 
 
-Expected_PORT = 33000
+Expected_PORT = 32000
 HOST = str(os.system("ipconfig getifaddr en0"))[:-1]
 PORT = Expected_PORT
 #----Now comes the sockets part----
@@ -523,8 +524,9 @@ def MAINWHATSAPP():
                     msg_list.insert(tkinter.END, splitedmsg[0])
                 else:
 
-
-                    unreads[splitedmsg[1]] = splitedmsg [0]
+                    listing = unreads[splitedmsg[1]]
+                    listing.appand(splitedmsg[0])
+                    unreads[splitedmsg[1]] = listing
                     #with open('/Users/bargolan/PycharmProjects/if/cyberfinal_project/unread.pickle', 'wb') as handle:
                      #   pickle.dump(unreads, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
