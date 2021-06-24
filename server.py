@@ -122,7 +122,8 @@ def handle_client(client):  # Takes client socket as argument.
             if G in list_of_groups.keys():
 
                 uhhh = list_of_groups[G]
-                uhhh.append(client)
+                if client not in uhhh:
+                    uhhh.append(client)
                 list_of_groups[G] = uhhh
                 print(list_of_groups)
 

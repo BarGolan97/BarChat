@@ -88,6 +88,8 @@ def login():
 def Join_user(Agroup = None):
 
 
+
+
     #with open('/Users/bargolan/PycharmProjects/if/cyberfinal_project/unread.pickle', 'rb') as handle:
     #   b = pickle.load(handle)
     b = unreads
@@ -105,10 +107,13 @@ def Join_user(Agroup = None):
     if group_info in b.keys():
         messages = b[group_info]
         print(messages)
-        if messages != '':
-            for f in messages:
-                msg_list.insert (END,f)
+        if messages != '' :
+            if type(messages) == list:
+                for f in messages:
+                    msg_list.insert (END,f)
 
+            else:
+                msg_list.insert(END,messages)
         else:
             pass
 
@@ -126,9 +131,9 @@ def Join_user(Agroup = None):
         if group_info not in your_groups:
             your_groups.append(group_info)
             unreads[group_info] = []
-            server_group = '#' + group_info
-            print(server_group)
-            client_socket.send(bytes(server_group, "utf8"))
+        server_group = '#' + group_info
+        print(server_group)
+        client_socket.send(bytes(server_group, "utf8"))
 
         current_group = group_info
         file1 = open("file.txt", "w")
@@ -145,12 +150,14 @@ def Join_user(Agroup = None):
         else:
             group_info = group.get()
     '''
+
+        msg_list.delete(0, 'end')
         if group_info not in your_groups:
             your_groups.append(group_info)
             unreads[group_info] = []
-            server_group = '#' + group_info
-            print(server_group)
-            client_socket.send(bytes(server_group, "utf8"))
+        server_group = '#' + group_info
+        print(server_group)
+        client_socket.send(bytes(server_group, "utf8"))
 
         current_group = group_info
         file1 = open("file.txt", "w")
@@ -371,6 +378,7 @@ def join_group():
 def sidplay_your_groups_screen():
     global your_group_screen
     your_group_screen = Toplevel(top)
+
     your_group_screen.title("Your current groups")
     your_group_screen.geometry("300x250")
     box = Listbox(your_group_screen, width=150, height=100, selectmode=SINGLE)
@@ -548,7 +556,11 @@ def MAINWHATSAPP():
     global top
     global msg_list
     top = tkinter.Tk()
-    top.title("BarChat")
+
+    fi = open('file.txt', 'r')
+    curr = fi.read()
+
+    top.title(curr)
     messages_frame = tkinter.Frame(top)
     my_msg = tkinter.StringVar()  # For the messages to be sent.
 
