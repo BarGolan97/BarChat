@@ -74,7 +74,7 @@ def handle_client(client):  # Takes client socket as argument.
 
 
     time.sleep(1)
-    welcome = '\nWelcome %s! If you ever want to quit, type {quit} to exit.' % name
+    welcome = '\nWelcome %s! \n If you ever want to quit,type {quit} to exit.' % name
     client.send(bytes(welcome, "utf8"))
     msg = "%s has joined the chat!" % name
     #broadcast(bytes(msg, "utf8"), 'placeholder')
@@ -86,7 +86,7 @@ def handle_client(client):  # Takes client socket as argument.
         decodedMSG = msg.decode("utf8")
 
         if decodedMSG[0] == "#" :
-
+            '''
             try:
 
                 list_of_groups[G].remove(client)
@@ -108,39 +108,38 @@ def handle_client(client):  # Takes client socket as argument.
                     for this in list_of_groups.keys():
                         actually[this] = []
 
-                    file_to_read = open("/Users/bargolan/PycharmProjects/if/cyberfinal_project/group_dic.pickle", "ab")
-                    dumped_dictionary = pickle.dump(actually, file_to_read, protocol=pickle.HIGHEST_PROTOCOL)
+
 
                 print('im in')
                 print(list_of_groups)
 
-
+            
 #-----------------------------------------------------------_#
 
             except:
+'''
+            G = decodedMSG[1:]
+            if G in list_of_groups.keys():
 
-                G = decodedMSG[1:]
-                if G in list_of_groups.keys():
-
-                    uhhh = list_of_groups[G]
-                    uhhh.append(client)
-                    list_of_groups[G] = uhhh
-                    print(list_of_groups)
-
-
-                else:
-                    people_in_group.append(client)
-                    list_of_groups[G] = people_in_group
-                    people_in_group = []
-
-                    for this in list_of_groups.keys():
-                        actually[this] = []
-
-                    file_to_read = open("/Users/bargolan/PycharmProjects/if/cyberfinal_project/group_dic.pickle", "ab")
-                    dumped_dictionary = pickle.dump(actually, file_to_read, protocol=pickle.HIGHEST_PROTOCOL)
-
-                print('im in')
+                uhhh = list_of_groups[G]
+                uhhh.append(client)
+                list_of_groups[G] = uhhh
                 print(list_of_groups)
+
+
+            else:
+                people_in_group.append(client)
+                list_of_groups[G] = people_in_group
+                people_in_group = []
+
+                for this in list_of_groups.keys():
+                    actually[this] = []
+
+                file_to_read = open("/Users/bargolan/PycharmProjects/if/cyberfinal_project/group_dic.pickle", "ab")
+                dumped_dictionary = pickle.dump(actually, file_to_read, protocol=pickle.HIGHEST_PROTOCOL)
+
+            print('im in')
+            print(list_of_groups)
 
 
 
@@ -155,6 +154,19 @@ def handle_client(client):  # Takes client socket as argument.
                 file = open('UserDataBase.txt', "w")
                 file.writelines(data)
                 file.close() '''
+
+        elif decodedMSG == "$$$i want to know the groups":
+            th = []
+            for var in list_of_groups.keys():
+                th.append(var)
+
+            data_string = pickle.dumps(th)
+            client.send(data_string)
+
+
+
+
+
 
         elif msg != bytes("{quit}", "utf8"):
             print('I WANT TO BROADCAST A THING\n\n')
@@ -176,9 +188,11 @@ def broadcast(msg, group, prefix=""):  # prefix is for name identification.
     people = list_of_groups[group]
     print (people)
     print('LIST OF GROUPS : \n'+str(list_of_groups))
+    the_msg =bytes(prefix, "utf8") + msg+ bytes('|'+group,'utf8')
+    print (the_msg)
     for sock in people :
         print ('im sending somthing to this persone' + str (sock))
-        sock.send(bytes(prefix, "utf8") + msg)
+        sock.send(the_msg)
 
     #for sock in group
     #do bla bla bla

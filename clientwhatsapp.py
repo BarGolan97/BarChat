@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Script for Tkinter GUI chat client."""
+import tkinter.ttk as ttk
+from tkinter.ttk import *
+import time
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 import tkinter
@@ -11,8 +14,16 @@ import pickle
 
 USERNAME = 0
 PASSWORD = 1
+global your_groups
+global current_group
+global unreads
+unreads = {}
+your_groups = []
 
 
+def update_curren_group():
+    print (current_group)
+    return current_group
 #-----------------------------
 
 # Designing window for registration
@@ -76,31 +87,81 @@ def login():
 
 def Join_user(Agroup = None):
 
+
+    #with open('/Users/bargolan/PycharmProjects/if/cyberfinal_project/unread.pickle', 'rb') as handle:
+    #   b = pickle.load(handle)
+    b = unreads
+    print ('im printing the groups and masseges:\n')
+    print (b)
+
+    if Agroup:
+        group_info = Agroup
+    else:
+        group_info = group.get()
+
+
+
+    print('im checcking if '+group_info+ 'is in b :\n')
+    if group_info in b.keys():
+        messages = b[group_info]
+        print(messages)
+        if messages != '':
+            for f in messages:
+                msg_list.insert (END,f)
+
+        else:
+            pass
+
     try:
         join_group_screen.destroy()
         login_screen.destroy()
         main_screen.destroy()
 
-        if Agroup:
+        '''if Agroup:
             group_info = Agroup
         else:
             group_info = group.get()
+            '''
 
-        server_group = '#'+group_info
-        print (server_group)
-        client_socket.send(bytes(server_group, "utf8"))
+        if group_info not in your_groups:
+            your_groups.append(group_info)
+            unreads[group_info] = []
+            server_group = '#' + group_info
+            print(server_group)
+            client_socket.send(bytes(server_group, "utf8"))
+
+        current_group = group_info
+        file1 = open("file.txt", "w")
+        file1.write(current_group)
+        file1.close()
+
+        print(your_groups, current_group)
+
+
     except:
+        '''
         if Agroup:
             group_info = Agroup
         else:
             group_info = group.get()
+    '''
+        if group_info not in your_groups:
+            your_groups.append(group_info)
+            unreads[group_info] = []
+            server_group = '#' + group_info
+            print(server_group)
+            client_socket.send(bytes(server_group, "utf8"))
 
-        server_group = '#' + group_info
-        print(server_group)
-        client_socket.send(bytes(server_group, "utf8"))
+        current_group = group_info
+        file1 = open("file.txt", "w")
+        file1.write(current_group)
+        file1.close()
+
+        print (your_groups,current_group)
 
 
-    #delete_join_user()
+
+#delete_join_user()
 
 
 
@@ -219,6 +280,15 @@ def main_account_screen():
 #join group screen
 
 def join_group():
+
+    #client_socket.send(bytes("$$$i want to know the groups", "utf8"))
+    #list_of_groups = client_socket.recv(BUFSIZ).decode("utf8")
+
+    #list_of_groups = list_of_groups.split('|')
+    list_of_groups = ['main group']
+
+
+
     global join_group_screen
     join_group_screen = Toplevel(main_screen)
     join_group_screen.title("Join Group")
@@ -246,10 +316,9 @@ def join_group():
     # Create a listbox
     listbox = Listbox(join_group_screen, width=150, height=100, selectmode=SINGLE)
 
-    file_to_read = open("/Users/bargolan/PycharmProjects/if/cyberfinal_project/" + "group_dic.pickle","rb")
-    loaded_dictionary = pickle.load(file_to_read)
+
     a=1
-    for i in loaded_dictionary.keys() :
+    for i in list_of_groups :
         listbox.insert(a,i)
         a=a+1
 
@@ -299,7 +368,33 @@ def join_group():
 
 
 
+def sidplay_your_groups_screen():
+    global your_group_screen
+    your_group_screen = Toplevel(top)
+    your_group_screen.title("Your current groups")
+    your_group_screen.geometry("300x250")
+    box = Listbox(your_group_screen, width=150, height=100, selectmode=SINGLE)
+    t = 1
+    for v in your_groups:
+        box.insert(t,v)
+        t = t+1
 
+    def chosen_item(a=None):
+
+        # Traverse the tuple returned by
+        # curselection method and print
+        # corresponding value(s) in the listbox
+        for c in box.curselection():
+            selection = box.get(c)
+        if selection is None:
+            pass
+        Join_user(selection)
+
+    bt = Button(your_group_screen, text='Press Enter', command=chosen_item)
+    bt.pack(side=BOTTOM)
+    box.pack()
+
+    your_group_screen.bind('<Return>', chosen_item)
 
 
 
@@ -309,6 +404,11 @@ def join_group():
 
 
 def another_join_group():
+
+    client_socket.send(bytes("$$$i want to know the groups", "utf8"))
+
+    list_of_groups = client_socket.recv(BUFSIZ)
+    list_of_groups = pickle.loads(list_of_groups)
 
     global group_screen
     group_screen = Toplevel(top)
@@ -337,10 +437,9 @@ def another_join_group():
     # Create a listbox
     lbox = Listbox(group_screen, width=150, height=100, selectmode=SINGLE)
 
-    file_to_read = open("/Users/bargolan/PycharmProjects/if/cyberfinal_project/" + "group_dic.pickle", "rb")
-    loaded_dictionary = pickle.load(file_to_read)
+
     a = 1
-    for i in loaded_dictionary.keys():
+    for i in list_of_groups:
         lbox.insert(a, i)
         a = a + 1
 
@@ -400,12 +499,33 @@ def MAINWHATSAPP():
 
     def receive():
         """Handles receiving of messages."""
+
         while True:
             try:
+
+                file1 = open('file.txt', 'r')
+                current_group = file1.read()
+                file1.close()
+
                 msg = client_socket.recv(BUFSIZ).decode("utf8")
-                msg_list.insert(tkinter.END, msg)
+                splitedmsg = msg.split('|')
+
+                print (current_group+'\n',splitedmsg[1])
+                if splitedmsg[1] == current_group:
+                    msg_list.insert(tkinter.END, splitedmsg[0])
+                else:
+
+
+                    unreads[splitedmsg[1]] = splitedmsg [0]
+                    #with open('/Users/bargolan/PycharmProjects/if/cyberfinal_project/unread.pickle', 'wb') as handle:
+                     #   pickle.dump(unreads, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
             except OSError:  # Possibly client has left the chat.
                 break
+
+            except:
+                time.sleep(0.1)
 
 
     def send(event=None):  # event is passed by binders.
@@ -424,7 +544,9 @@ def MAINWHATSAPP():
         my_msg.set("{quit}")
         send()
 
+
     global top
+    global msg_list
     top = tkinter.Tk()
     top.title("BarChat")
     messages_frame = tkinter.Frame(top)
@@ -434,7 +556,7 @@ def MAINWHATSAPP():
     my_msg.set("Type your messages here.")
     scrollbar = tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
     # Following will contain the messages.
-    msg_list = tkinter.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
+    msg_list = tkinter.Listbox(messages_frame, height=15, width=60, yscrollcommand=scrollbar.set)
     scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
     msg_list.pack(side=tkinter.LEFT, fill=tkinter.BOTH)
     msg_list.pack()
@@ -447,6 +569,27 @@ def MAINWHATSAPP():
     send_button.pack()
     group_button = tkinter.Button(top, text="Join Group", command=another_join_group)
     group_button.pack()
+
+    style = ttk.Style()
+
+    # This will be adding style, and
+    # naming that style variable as
+    # W.Tbutton (TButton is used for ttk.Button).
+    style.configure('W.TButton', font=
+    ('calibri', 10, 'bold', 'underline'),
+                    foreground='blue')
+
+    # Style will be reflected only on
+    # this button because we are providing
+    # style only on this Button.
+    ''' Button 1'''
+    btn1 = ttk.Button(top, text='Your Groups -->',
+                  style ='W.TButton',
+                command=sidplay_your_groups_screen)
+
+    btn1.place(relx=1, x=-2, y=2, anchor=NE)
+
+
     top.protocol("WM_DELETE_WINDOW", on_closing)
 
 
@@ -458,10 +601,8 @@ def MAINWHATSAPP():
 
 
 
-
-
-
 # login screen
+
 
 
 
